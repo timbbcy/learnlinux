@@ -70,3 +70,27 @@ git stash list 查看列表
 强行删除分支：git branch -D feature-vulcan
 
 把本地分支发布到远程：git push origin1 dev
+
+git tag <name>就可以打一个新标签：
+git tag查看所有标签：
+比方说要对add merge这次提交打标签，它对应的commit id是6224937，敲入命令：git tag v0.9 6224937
+git show <tagname>查看标签信息：
+创建带有说明的标签，用-a指定标签名，-m指定说明文字：git tag -a v0.1 -m "version 0.1 released" 3628164
+可以通过-s用私钥签名一个标签：git tag -s v0.2 -m "signed version 0.2 released" fec145a
+删除标签：git tag -d v0.1
+推送某个标签到远程，使用命令git push origin <tagname>：git push origin v1.0
+一次性推送全部尚未推送到远程的本地标签：git push origin --tags
+如果标签已经推送到远程，要删除远程标签就麻烦一点，先从本地删除：git tag -d v0.9
+然后，从远程删除。删除命令也是push，但是格式如下：git push origin :refs/tags/v0.9
+
+在Git工作区的根目录下创建一个特殊的.gitignore文件，然后把要忽略的文件名填进去，Git就会自动忽略这些文件。
+不需要从头写.gitignore文件，GitHub已经为我们准备了各种配置文件，只需要组合一下就可以使用了。所有配置文件可以直接在线浏览：https://github.com/github/gitignore
+
+$ git config --global alias.co checkout
+$ git config --global alias.ci commit
+$ git config --global alias.br branch
+$ git config --global alias.st status
+$ git config --global alias.unstage 'reset HEAD'
+$ git config --global alias.last 'log -1'
+git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
+
