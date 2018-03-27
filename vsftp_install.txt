@@ -1,0 +1,59 @@
+CentOS安装vsftpd提供ftp服务
+一、安装vsftpd组件
+yum -y install vsftpd
+
+二、添加一个ftp用户
+useradd ftp_zzh
+登录后默认的路径为 /home/ftp-userliu.
+
+三、给ftp用户添加密码
+passwd ftp_zzh
+
+四、删除ftp用户
+userdel ftp-userliu
+
+五、防火墙开启21端口
+ftp默认的端口为21，而centos默认是没有开启的，所以要修改iptables文件
+vim /etc/sysconfig/iptables
+然后增加一个21端口
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 21 -j ACCEPT
+然后重启iptables服务：
+service iptables restart
+
+六、修改selinux
+查看selinux：
+getsebool -a | grep ftp
+发现两行都关闭了，access是用于访问ftp，home_dir是用于访问ftp存放的文件夹
+打开两个选项：
+setsebool allow_ftpd_full_access on 
+setsebool ftp_home_dir on
+上面的两行选项命令时暂时性的，重启之后又会改为off，永久性的操作：
+setsebool -P allow_ftpd_full_access on 
+setsebool -P ftp_home_dir on
+但是加了-P在我的Centos上会出现Boolean allow_ftpd_full_access is not defined的错误，暂时网上没有找到解决方案
+
+如果这样还不行，应该是ftp客户端工具开启了passive模式（被动模式），如提示Entering Passive mode，就代表是passive模式，默认是不行的，因为ftp passive模式被iptables挡住了 
+改为主动模式： 
+
+七、关闭匿名访问
+vim /etc/vsftpd/vsftpd.conf
+把anonymous_enable的 YES 改为 NO
+anonymous_enable=NO
+
+八、开启被动模式
+
+vim /etc/vsftpd/vsftpd.conf
+在后面加上 
+pasv_min_port=30000 
+pasv_max_port=30999
+表示端口范围为30000~30999，这个可以随意改。
+改完重启一下vsftpd
+service vsftpd restart
+由于指定这段端口范围，iptables也要相应的开启这个范围
+vim /etc/sysconfig/iptables
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 30000:30999 -j ACCEPT
+然后重启iptables，搞定
+service iptables restart
+
+九、设置开机启动vsftpd ftp服务
+chkconfig vsftpd on

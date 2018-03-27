@@ -1,0 +1,96 @@
+CentOS 7 默认的python版本是python2.7.5。因为yum依赖于默认的python版本的缘由，所以要先保留默认版本，并修改yum文件头部后，才能开始安装更新python2和python3两个最新版本。（python2和python3共存）
+
+一. 保留默认python版本2.7.5，并修改yum头部，保持yum对默认版本python2.7.5的依赖
+
+1.su root　　# 获取root权限
+
+2.mv /usr/bin/python2.7 /usr/bin/python2.7.5　　# 保留默认版本python为python2.7.5
+
+　ln -s /usr/bin/python2.7.5 /usr/local/bin/python2.7.5　　# 创建软连接
+
+
+3.ll /usr/bin/yum*　　# 查看/usr/bin/目录下所有yum文件（7个）头部
+
+4.vi /usr/bin/yum*　　# 修改/usr/bin/目录下所有yum文件（7个）头部
+
+　　#!/usr/bin/python —> #!/usr/bin/python2.7.5　　
+
+5.vi /usr/libexec/urlgrabber-ext-down　　# 修改/usr/libexec/目录下 urlgrabber-ext-down头部
+
+　　#!/usr/bin/python —> #!/usr/bin/python2.7.5
+
+二. 安装最新版python2.7.13和python3.6.2（python2和python3共存，修改后默认版本为python3.6.2）
+
+准备工作：
+
+1. 安装wget命令（可以在线下载安装包的命令）
+
+　　yum -y install wget
+
+2. 准备编译环境
+
+　　yum groupinstall 'Development Tools'
+　　yum install zlib-devel bzip2-devel openssl-devel ncurses-devel
+3. 下载并安装最新版本的python2和python3的tgz压缩文件
+
+　　https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz
+　　https://www.python.org/ftp/python/3.6.2/Python-3.6.2.tgz
+
+开始安装：
+
+1. 进入下载目录：
+
+　　cd /usr/local/src
+
+2. 下载并安装最新版本python2：
+　　wget https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz
+　　tar zxvf Python-2.7.13.tgz
+　　cd Python-2.7.13
+　　./configure 
+　　make all
+　　make install
+　　make clean
+　　make distclean
+　　rm -rf /usr/bin/python
+　　rm -rf /usr/bin/python2
+　　rm -rf /usr/bin/python2.7
+　　ln -s /usr/local/bin/python2.7 /usr/bin/python
+　　ln -s /usr/local/bin/python2.7 /usr/bin/python2
+　　ln -s /usr/local/bin/python2.7 /usr/bin/python2.7
+　　/usr/bin/python -V
+　　/usr/bin/python2 -V
+　　/usr/bin/python2.7 -V
+　　rm -rf /usr/local/bin/python
+　　rm -rf /usr/local/bin/python2
+　　ln -s /usr/local/bin/python2.7 /usr/local/bin/python
+　　ln -s /usr/local/bin/python2.7 /usr/local/bin/python2
+　　python -V
+　　python2 -V
+　　python2.7 -V
+
+3. 下载并安装最新版本python3：
+　　wget https://www.python.org/ftp/python/3.6.2/Python-3.6.2.tgz
+　　tar zxvf Python-3.6.2.tgz
+　　cd Python-3.6.2
+　　./configure
+　　make all
+　　make install
+　　make clean
+　　make distclean
+　　rm -rf /usr/bin/python
+　　rm -rf /usr/bin/python3
+　　rm -rf /usr/bin/python3.6
+　　ln -s /usr/local/bin/python3.6 /usr/bin/python
+　　ln -s /usr/local/bin/python3.6 /usr/bin/python3
+　　ln -s /usr/local/bin/python3.6 /usr/bin/python3.6
+　　/usr/bin/python -V
+　　/usr/bin/python3 -V
+　　/usr/bin/python3.6 -V
+　　rm -rf /usr/local/bin/python
+　　rm -rf /usr/local/bin/python3
+　　ln -s /usr/local/bin/python3.6 /usr/local/bin/python
+　　ln -s /usr/local/bin/python3.6 /usr/local/bin/python3
+　　python -V
+　　python3 -V
+　　python3.6 -V
+

@@ -1,0 +1,8 @@
+vi /etc/fstab
+添加一行
+/dev/cdrom                                /mnt   iso9660  defaults      0 0 
+
+查看mount情况
+mount -a 
+
+ls /mnt

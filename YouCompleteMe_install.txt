@@ -1,0 +1,4 @@
+####安装python3,支持share,export LD_LIB
+####安装cmake export PATH
+####安装vim,版本大于7.4,支持python3和python2
+####安装YCM，使用vim的bundle,再使用install.py编译安装
