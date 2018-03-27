@@ -1,0 +1,72 @@
+初始化一个Git仓库，使用git init命令。
+
+添加文件到Git仓库，分两步：
+
+使用命令git add <file>，注意，可反复多次使用，添加多个文件；
+
+使用命令git commit，完成。
+
+git status命令可以让我们时刻掌握仓库当前的状态
+
+git diff查看修改未提交文件相对上次提交的的变更内容
+
+git log --pretty=oneline 每条一行查看历史记录
+
+git reset --hard HEAD^  回退版本 上一个版本就是HEAD^，上上一个版本就是HEAD^^，当然往上100个版本写100个^比较容易数不过来，所以写成HEAD~100
+
+git reset --hard 3628164 回退版本
+
+git reflog用来记录你的每一次命令
+
+git diff HEAD -- readme.txt命令可以查看工作区和版本库里面最新版本的区别
+
+git checkout -- readme.txt意思就是，把readme.txt文件在工作区的修改全部撤销，这里有两种情况：
+一种是readme.txt自修改后还没有被放到暂存区，现在，撤销修改就回到和版本库一模一样的状态；
+一种是readme.txt已经添加到暂存区后，又作了修改，现在，撤销修改就回到添加到暂存区后的状态。
+总之，就是让这个文件回到最近一次git commit或git add时的状态。
+
+git reset HEAD file可以把暂存区的修改撤销掉（unstage），重新放回工作区
+git reset命令既可以回退版本，也可以把暂存区的修改回退到工作区。当我们用HEAD时，表示最新的版本。
+
+rm删除文件后，有两个选择，一是确实要从版本库中删除该文件，那就用命令git rm删掉，并且git commit
+另一种情况是删错了，因为版本库里还有呢，所以可以很轻松地把误删的文件恢复到最新版本
+git checkout -- test.txt
+git checkout其实是用版本库里的版本替换工作区的版本，无论工作区是修改还是删除，都可以“一键还原”。
+
+git remote add origin git@github.com:michaelliao/learngit.git 关联远程库
+
+把本地库的内容推送到远程，用git push命令，实际上是把当前分支master推送到远程。
+由于远程库是空的，我们第一次推送master分支时，加上了-u参数git push -u origin master
+
+git push origin master  把本地master分支的最新修改推送至GitHub
+
+git clone git@github.com:timbbcy/gitskills.git 克隆一个本地库
+
+创建dev分支，然后切换到dev分支：git checkout -b dev
+git checkout命令加上-b参数表示创建并切换，相当于以下两条命令
+git branch dev  
+git checkout dev
+
+用git branch命令查看当前分支
+
+合并分支分两步：
+切换回master分支 ：git checkout master
+把dev分支的工作成果合并到master分支上 : git merge dev
+删除dev分支:git branch -d dev
+
+带参数的git log查看分支合并情况：git log --graph --pretty=oneline --abbrev-commit
+master和分支对同一文件分别有更新内容时，合并会发生冲突，需要修改冲突内容后再重新合并
+
+通常，合并分支时，如果可能，Git会用Fast forward模式，但这种模式下，删除分支后，会丢掉分支信息。
+如果要强制禁用Fast forward模式，Git就会在merge时生成一个新的commit，这样，从分支历史上就可以看出分支信息。
+git merge --no-ff -m "merge with no-ff" dev
+
+git stash 可以把当前工作现场“储藏”起来，等以后恢复现场后继续工作
+git stash list 查看列表
+恢复工作现场：
+一是用git stash apply恢复，但是恢复后，stash内容并不删除，你需要用git stash drop来删除；
+另一种方式是用git stash pop，恢复的同时把stash内容也删了：
+
+强行删除分支：git branch -D feature-vulcan
+
+把本地分支发布到远程：git push origin1 dev
