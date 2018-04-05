@@ -57,3 +57,19 @@ service iptables restart
 
 九、设置开机启动vsftpd ftp服务
 chkconfig vsftpd on
+
+安装iptables
+
+由于没有防火墙会造成不安全，所以给服务器安装一应用更广的防火墙iptables，首先要禁用firewall，通过yum安装iptables：
+
+systemctil disable firewalld
+yum install -y iptables-services
+
+关闭防火墙：
+systemctl stop firewalld
+
+启动iptables
+
+systemctl start iptables
+
+
