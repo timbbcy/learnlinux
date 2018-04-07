@@ -1,0 +1,209 @@
+ssh免密码登录全过程
+原创 2016年11月01日 17:24:41 标签：rsa /ssh /密码 /无密码登录 18427
+生成公钥和私钥
+
+　ssh-keygen
+1
+等同于ssh-keygen -t rsa
+运行上面的命令后，系统会出现一系列提示，可以一路回车,例如：
+
+$ ssh-keygen 
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/glowd/.ssh/id_rsa): Enter
+1
+2
+3
+特别说明，要不要对私钥设置口令（passphrase），如果担心私钥的安全，可以设置一个。没有特殊需求直接Enter，为空
+运行结束以后， 默认在 ~/.ssh目录生成两个文件： 
+id_rsa ：私钥 
+id_rsa.pub ：公钥
+
+2.导入公钥到认证文件,更改权限
+
+导入本机
+
+ cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys  
+1
+2
+导入要免密码登录的服务器
+
+首先将公钥复制到远端服务器，用户为glowd
+
+ scp {-P port} ~/.ssh/id_rsa.pub glowd@host:~  
+1
+2
+在服务器上
+
+cat ~/id_rsa.pub >> ~/.ssh/authorized_keys 
+1
+2
+在服务器上更改权限(必须)
+
+    chmod 755 ~
+    chmod 700 ~/.ssh
+    chmod 600 ~/.ssh/authorized_keys  
+1
+2
+3
+以上执行之后，有些机器应该可以直接访问了，可以测试一下 
+ssh {remote ip}
+3.常见问题及解决方案
+
+生成密钥并上传至远程主机后，任然不可用 
+打开服务器的 /etc/ssh/sshd_config 这个文件，取消注释。
+#AuthorizedKeysFile .ssh/authorized_keys
+1
+2
+重启服务器的ssh服务。
+#RHEL/CentOS系统
+$ service sshd restart
+#ubuntu系统
+$ service ssh restart
+#debian系统
+$ /etc/init.d/ssh restart
+1
+2
+3
+4
+5
+6
+执行ssh-copy-id 命令
+ ssh-copy-id glowd@remote ip
+ `如果不是默认端口22,是9001`
+ ssh-copy-id -p 9001 glowd@remote ip
+1
+2
+3
+ssh连接远程主机时，出现 sign_and_send_pubkey: signing failed: agent refused operation 错误，并且还是需要输入密码
+表示ssh-agent 已经在运行了，但是找不到附加的任何keys，就是说你生成的key，没有附加到ssh-agent上，需要附加一下，执行
+查看hosts中是否配置了git服务器的地址，那样的话，会一直让你输入密码
+ssh-add
+`当然你也可以查看附加了哪些key`
+ssh-add -l
+1
+2
+3
+结果就可以了
+ssh glowd@{remote ip}
+`或者，使用9001端口`
+ssh -p 9001 glowd@{remote ip}
+1
+2
+3
+4
+如果显示下面的错误
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@       WARNING: POSSIBLE DNS SPOOFING DETECTED!          @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+The ECDSA host key for [git.bbdservice.net]:51668 has changed,
+and the key for the corresponding IP address [10.10.80.26]:51668
+is unknown. This could either mean that
+DNS SPOOFING is happening or the IP address for the host
+and its host key have changed at the same time.
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!
+Someone could be eavesdropping on you right now (man-in-the-middle attack)!
+It is also possible that a host key has just been changed.
+The fingerprint for the ECDSA key sent by the remote host is
+6e:92:c8:d6:f2:45:ae:ff:5f:1d:21:8b:01:52:8a:82.
+Please contact your system administrator.
+Add correct host key in /home/glowd/.ssh/known_hosts to get rid of this message.
+Offending ECDSA key in /home/glowd/.ssh/known_hosts:1
+  remove with: ssh-keygen -f "/home/glowd/.ssh/known_hosts" -R [git.bbdservice.net]:51668
+ECDSA host key for [git.bbdservice.net]:51668 has changed and you have requested strict checking.
+Host key verification failed.
+fatal: Could not read from remote repository.
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+说明你连接的那一行访问，验证已经改变，/home/glowd/.ssh/known_hosts:1，删除那一行，或者直接把整个known_hosts文件删除，重新连接一次就好了
+4.前面搞定了免密码登录，想想也是很激动了。但是，还要写ip，还要写用户名，是不是又有点不爽啦。搞定用户名和端口号
+
+找到 ~/.ssh/config 文件，如果木有的话就自个儿建一个吧，内容如下：
+Host {remote ip}
+User {username} 
+Port {port}
+1
+2
+3
+现在连接就很简单了 
+ssh {remote ip}
+5.我现在已经可以ssh 到某台机器，并且不用输入用户名，密码了。但是我现在要使用github，或者github，怎么办了。
+
+看网上有些人说，不同的账号，要生成不同的公匙，私匙，也是有解决方案的
+
+假设github,我的账号是 glowd@gmail.com
+
+$ ssh-keygen -t rsa -C "glowd@gmail.com"
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/glowd/.ssh/id_rsa): {输入你想要保存密匙的文件名  假设id_rsa_github}
+Enter passphrase (empty for no passphrase):{enter}
+Enter same passphrase again:{enter}
+Your identification has been saved in /home/glowd/.ssh/id_rsa_github.
+Your public key has been saved in /home/glowd/.ssh/id_rsa_github.pub.
+1
+2
+3
+4
+5
+6
+7
+现在我们去/home/glowd/.ssh/目录下，发现多了两个文件id_rsa_github和id_rsa_github.pub
+
+但是此时如果你把id_rsa_github.pub的内容，拷贝到github的ssh key里面去，然后连接github
+
+ssh -T git@github.com
+1
+会发现结果是 
+Permission denied (publickey).
+
+那是因为现在ssh还不能识别这个密匙-key
+想要识别这个key也很简单
+
+ssh-add /home/glowd/.ssh/id_rsa_github
+`如果你想查看现在有那些key可以识别`
+ssh-add -l
+1
+2
+3
+现在有你的key了，执行
+
+ssh -T git@github.com
+1
+会显示你成功通过验证了并且登录，但是GitHub没有提供shell访问，意思不能使用登录后的命令行操作github 
+
+Hi Glowdable! You've successfully authenticated, but GitHub does not provide shell access.
+
+现在好了，我有两个key，一个ssh 服务器，一个github。但是我们公司也有gitlab，那么我还要再生成一个key，用gitlab的账号吗？
+当然如果你愿意是没有问题，而且网上很多同学也是这样说的，但是这是没有道理的。
+
+首先，我们生成的key，并不和账号绑定，虽然我们看到,生成key时好像使用了账号，其实那不是账号，那只是comment-注释。就是说，无论你写什么，都不会对生成的key产生影响
+ssh-keygen -C "glowd@gmail.com"
+1
+那么，我们看到最后生成的key里面，是包含了这个comment的。这是事实，不过在验证时，glowd@gmail.com后面的这部分是没有作用的，你可以任意修改。
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZhsxICWPITRpvOTosjTmuo2osYAIet2DdjBZ/qoLcU6TZtrojIt17I48fYnm4eq9LI1jF7kG+ZwiuAuChRVl2VEOhGsgkk3xG10lQEpJt2RHSxaBfaVwu0BpwJ0bCaFIq/W73WxeWE2AzuG7/V+QjwtvBBQMFKrZ3nbgifgsndrT8KdE/pCGxuxgB5Xx5Y7mdAwxhHzseB9Yl+gCgstjMDe1FjTkRibQ9uQZKSoTKLxQZ+NZC7Ylniv21/CO105XwM0CF4wGlei0FE9bn7cs/1SNxM1Aae67eYADkfSvQIkRS6yvtJ4YxrZ9Xsdw7smy8kJ1wBqhDFMz1FMZp5oDh glowd@gmail.com
+1
+结论：密钥不和任何comment绑定，任何地方使用都是一样的，严格来说，如果没有特殊需求，一个就够了。系统默认在校验的时候就会读取ssh-add -l中key所对应的密钥文件
+
