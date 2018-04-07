@@ -1,0 +1,2 @@
+http://pip-cn.readthedocs.io/en/latest/installing.html
+
